@@ -25,7 +25,7 @@ TESTING_START  = "2022-05-21"
 TESTING_END    = "2025-01-01"
 
 # Which crypto pairs to test
-CURRENCIES = ["BTC/USD", "ETH/USD"]
+CURRENCIES = ["BTC/USD", "ETH/USD", "XRP/USD", "LTC/USD"]
 
 ############################################################
 #                  PARAMETER GRID                         #
