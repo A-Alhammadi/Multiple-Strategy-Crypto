@@ -1,0 +1,17 @@
+Currency,Strategy,Best Params,Train Performance,Test Performance,Buy & Hold
+BTC/USD,moving_average_crossover,"{'short_window': 10, 'long_window': 100}",4.120251531666132,0.9954474444967802,2.2204517882530133
+BTC/USD,rsi,"{'period': 7, 'buy_threshold': 30, 'sell_threshold': 75}",-0.8973559620629067,-0.39667156785892255,2.2204517882530133
+BTC/USD,bollinger_bands,{'period': 20},-0.756483650945561,-0.36883965233198124,2.2204517882530133
+BTC/USD,macd,"{'fast_period': 20, 'slow_period': 26, 'signal_period': 12}",28.68055015308727,0.2197343111217669,2.2204517882530133
+BTC/USD,high_low_breakout,{'lookback': 12},-0.8684375468858847,0.1878687485333368,2.2204517882530133
+BTC/USD,volume_price_action,{'volume_multiplier': 2.0},0.00771566673702595,0.8950515401885253,2.2204517882530133
+BTC/USD,vwap_zone,"{'rsi_period': 14, 'rsi_lower': 45, 'rsi_upper': 55}",-0.8375007791014122,-0.7063510317310315,2.2204517882530133
+BTC/USD,zscore_mean_reversion,"{'zscore_window': 20, 'zscore_threshold': 2}",-0.756483650945561,-0.36883965233198124,2.2204517882530133
+ETH/USD,moving_average_crossover,"{'short_window': 5, 'long_window': 100}",12.645606924518098,4.198811652206398,0.7110574276802644
+ETH/USD,rsi,"{'period': 7, 'buy_threshold': 30, 'sell_threshold': 70}",-0.964795241941731,-0.7863920909527997,0.7110574276802644
+ETH/USD,bollinger_bands,{'period': 20},-0.9847594082171877,0.057541137549846244,0.7110574276802644
+ETH/USD,macd,"{'fast_period': 12, 'slow_period': 26, 'signal_period': 12}",20.51692336726527,0.7830331795413374,0.7110574276802644
+ETH/USD,high_low_breakout,{'lookback': 24},-0.48146534679678143,-0.3784570591695642,0.7110574276802644
+ETH/USD,volume_price_action,{'volume_multiplier': 2.0},-0.954325084881066,0.6917631180438759,0.7110574276802644
+ETH/USD,vwap_zone,"{'rsi_period': 14, 'rsi_lower': 45, 'rsi_upper': 60}",-0.9695161546675695,-0.6803805054230443,0.7110574276802644
+ETH/USD,zscore_mean_reversion,"{'zscore_window': 20, 'zscore_threshold': 2}",-0.9847594082171877,0.057541137549846244,0.7110574276802644
