@@ -39,7 +39,7 @@ def rsi(df: pd.DataFrame, period: int, buy_threshold: float, sell_threshold: flo
     df["signal"] = df["signal"].replace(to_replace=0, method="ffill")
     return df["signal"]
 
-def bollinger_bands(df: pd.DataFrame, period: int):
+def bollinger_bands(df: pd.DataFrame, period: int, std_dev: float = 2.0):
     """
     Strategy: Buy if price crosses below lower band, Sell if price crosses above upper band.
     """
@@ -47,14 +47,13 @@ def bollinger_bands(df: pd.DataFrame, period: int):
     df["middle_band"] = df["close_price"].rolling(window=period).mean()
     df["std"] = df["close_price"].rolling(window=period).std()
 
-    df["upper_band"] = df["middle_band"] + 2 * df["std"]
-    df["lower_band"] = df["middle_band"] - 2 * df["std"]
+    df["upper_band"] = df["middle_band"] + std_dev * df["std"]
+    df["lower_band"] = df["middle_band"] - std_dev * df["std"]
 
     df["signal"] = 0
     df.loc[df["close_price"] < df["lower_band"], "signal"] = 1
     df.loc[df["close_price"] > df["upper_band"], "signal"] = -1
 
-    # Forward fill
     df["signal"] = df["signal"].replace(to_replace=0, method="ffill")
     return df["signal"]
 
@@ -84,7 +83,6 @@ def high_low_breakout(df: pd.DataFrame, lookback: int):
     df.loc[df["close_price"] > df["rolling_high"].shift(1), "signal"] = 1
     df.loc[df["close_price"] < df["rolling_low"].shift(1), "signal"] = -1
 
-    # Forward fill
     df["signal"] = df["signal"].replace(to_replace=0, method="ffill")
     return df["signal"]
 
@@ -92,20 +90,16 @@ def volume_price_action(df: pd.DataFrame, volume_multiplier: float):
     """
     Strategy: If large volume spike + bullish engulfing => Buy,
               If large volume spike + bearish engulfing => Sell.
-    A very simplistic version just to demonstrate the idea.
     """
     df = df.copy()
 
     # Calculate a rolling average volume for reference
     df["volume_ma"] = df["volume_crypto"].rolling(window=20).mean()
 
-    # Bullish engulfing: current candle's body fully covers previous candle's body
-    # Bearish engulfing: current candle's body is fully below previous candle
-    # We'll just approximate it in a simplistic way for demonstration
+    # Basic bullish/bearish engulfing detection
     df["prev_close"] = df["close_price"].shift(1)
     df["prev_open"] = df["open_price"].shift(1)
 
-    # Basic bull/bear detection
     df["bullish_engulf"] = (df["close_price"] > df["prev_close"]) & (df["open_price"] < df["prev_open"])
     df["bearish_engulf"] = (df["close_price"] < df["prev_close"]) & (df["open_price"] > df["prev_open"])
 
@@ -116,22 +110,17 @@ def volume_price_action(df: pd.DataFrame, volume_multiplier: float):
     df.loc[df["bullish_engulf"] & df["volume_spike"], "signal"] = 1
     df.loc[df["bearish_engulf"] & df["volume_spike"], "signal"] = -1
 
-    # Forward fill
     df["signal"] = df["signal"].replace(to_replace=0, method="ffill")
     return df["signal"]
 
 def vwap_zone(df: pd.DataFrame, rsi_period: int, rsi_lower: float, rsi_upper: float):
     """
-    Strategy: 
-      - Calculate VWAP. 
-      - Buy if price < VWAP and RSI > rsi_lower (sign of accumulation),
-      - Sell if price > VWAP and RSI < rsi_upper (distribution).
+    Strategy:
+      - Calculate VWAP.
+      - Buy if price < VWAP and RSI > rsi_lower,
+      - Sell if price > VWAP and RSI < rsi_upper.
     """
     df = df.copy()
-
-    # VWAP calculation (basic version)
-    # volume_usd ~ (price * volume_crypto), so approximate typical price * volume_crypto
-    # We'll use close_price * volume_crypto for simplicity.
     df["cum_price_vol"] = (df["close_price"] * df["volume_crypto"]).cumsum()
     df["cum_vol"] = df["volume_crypto"].cumsum()
     df["vwap"] = df["cum_price_vol"] / (df["cum_vol"] + 1e-10)
@@ -149,7 +138,6 @@ def vwap_zone(df: pd.DataFrame, rsi_period: int, rsi_lower: float, rsi_upper: fl
     df.loc[(df["close_price"] < df["vwap"]) & (df["rsi"] > rsi_lower), "signal"] = 1
     df.loc[(df["close_price"] > df["vwap"]) & (df["rsi"] < rsi_upper), "signal"] = -1
 
-    # Forward fill
     df["signal"] = df["signal"].replace(to_replace=0, method="ffill")
     return df["signal"]
 
@@ -168,8 +156,7 @@ def zscore_mean_reversion(df: pd.DataFrame, zscore_window: int, zscore_threshold
 
     df["signal"] = 0
     df.loc[df["zscore"] < -zscore_threshold, "signal"] = 1
-    df.loc[df["zscore"] > zscore_threshold,  "signal"] = -1
+    df.loc[df["zscore"] > zscore_threshold, "signal"] = -1
 
-    # Forward fill
     df["signal"] = df["signal"].replace(to_replace=0, method="ffill")
     return df["signal"]

@@ -34,11 +34,13 @@ def generate_param_dicts(strategy_param_grid):
     Example:
       strategy_param_grid = {'short_window': [5, 10], 'long_window': [50, 100]}
     Produces:
-      [{'short_window': 5, 'long_window': 50}, 
-       {'short_window': 5, 'long_window': 100}, 
-       {'short_window': 10, 'long_window': 50}, 
+      [{'short_window': 5, 'long_window': 50},
+       {'short_window': 5, 'long_window': 100},
+       {'short_window': 10, 'long_window': 50},
        {'short_window': 10, 'long_window': 100}]
     """
+    if not strategy_param_grid:
+        return [{}]  # no parameters to tune
     keys = list(strategy_param_grid.keys())
     values_product = list(itertools.product(*strategy_param_grid.values()))
     return [dict(zip(keys, vals)) for vals in values_product]
@@ -52,16 +54,11 @@ def optimize_strategy(df: pd.DataFrame, strategy_name: str, strategy_param_grid:
     """
 
     # If the strategy has no tunable parameters, just run it once
-    if not strategy_param_grid:
-        df["signal"] = STRATEGY_FUNCTIONS[strategy_name](df)
-        total_return, final_portfolio_value = backtest_strategy(df, initial_capital)
-        return {}, total_return, final_portfolio_value
+    param_dicts = generate_param_dicts(strategy_param_grid)
 
     best_params = None
     best_performance = float("-inf")
     best_final_portfolio = 0
-
-    param_dicts = generate_param_dicts(strategy_param_grid)
 
     for param_dict in param_dicts:
         # Apply strategy with the current set of parameters
