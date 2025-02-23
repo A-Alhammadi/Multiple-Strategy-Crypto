@@ -2,12 +2,12 @@
 
 import pandas as pd
 
-def backtest_strategy(df: pd.DataFrame, initial_capital: float = 10000):
+def backtest_strategy(df: pd.DataFrame, initial_capital: float = 10000, return_trades: bool = False):
     """
     Runs a backtest on the given DataFrame and computes:
       - total_return
       - final_portfolio_value
-      - number_of_trades
+      - (optional) number_of_trades (if return_trades=True)
     """
     df = df.copy()
 
@@ -26,16 +26,18 @@ def backtest_strategy(df: pd.DataFrame, initial_capital: float = 10000):
     # Compute final portfolio value
     final_portfolio_value = initial_capital * (1 + total_return)
 
-    # Count trades as how many times position changes (from +1 to -1, etc.)
-    df["position"] = df["signal"].ffill().fillna(0)
-    df["pos_change"] = df["position"].diff().fillna(0)
-    number_of_trades = int((df["pos_change"] != 0).sum())
+    if return_trades:
+        # Count trades as how many times position changes (from +1 to -1, etc.)
+        df["position"] = df["signal"].ffill().fillna(0)
+        df["pos_change"] = df["position"].diff().fillna(0)
+        number_of_trades = int((df["pos_change"] != 0).sum())
 
-    return total_return, final_portfolio_value, number_of_trades
-
+        return total_return, final_portfolio_value, number_of_trades  # ✅ This ensures 3 values are returned
+    else:
+        return total_return, final_portfolio_value  # ✅ This ensures 2 values are returned
 
 def buy_and_hold(df: pd.DataFrame, initial_capital: float = 10000):
-    """Still returns just two values."""
+    """Returns just two values: total_return, final_portfolio_value"""
     if len(df) == 0:
         return 0.0, initial_capital
 

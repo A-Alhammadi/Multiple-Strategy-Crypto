@@ -63,7 +63,7 @@ def test_combo(
         df["signal"] = final_signal
 
     # Run backtest
-    total_return, final_portfolio_val, num_trades = backtest_strategy(df, initial_capital)
+    total_return, final_portfolio_val, num_trades = backtest_strategy(df, initial_capital, return_trades=True)
 
     # Print results
     print("\n=== Test Results ===")

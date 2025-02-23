@@ -18,7 +18,7 @@ TRAINING_END   = "2022-05-20"
 TESTING_START  = "2022-05-21"
 TESTING_END    = "2025-01-01"
 
-CURRENCIES = ["ETH/USD", "XRP/USD"]
+CURRENCIES = ["BTC/USD", "LTC/USD"]
 INITIAL_CAPITAL = 10000
 
 ############################################################

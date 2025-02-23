@@ -66,7 +66,14 @@ def optimize_strategy(df: pd.DataFrame, strategy_name: str, strategy_param_grid:
         df_temp["signal"] = STRATEGY_FUNCTIONS[strategy_name](df_temp, **param_dict)
 
         # Evaluate strategy performance and portfolio value
-        performance, final_portfolio = backtest_strategy(df_temp, initial_capital)
+        result = backtest_strategy(df_temp, initial_capital)
+
+        if isinstance(result, tuple) and len(result) == 2:
+            performance, final_portfolio = result
+        elif isinstance(result, tuple) and len(result) == 3:
+            performance, final_portfolio, _ = result  # Ignore num_trades if not needed
+        else:
+            raise ValueError(f"Unexpected return from backtest_strategy: {result}")
 
         # Track the best-performing parameters
         if performance > best_performance:
