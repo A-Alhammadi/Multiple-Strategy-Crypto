@@ -5,39 +5,36 @@ import pandas as pd
 
 def combine_signals(signal_dfs, buy_operator="AND", sell_operator="AND"):
     """
-    Given a list of dataframes each containing a 'signal' column,
-    combine them into a single signal using the specified logical operators
-    for the buy side (+1) and the sell side (-1).
-
-    signal = +1 if buy condition
-    signal = -1 if sell condition
-    signal =  0 otherwise
-
-    buy_operator, sell_operator ∈ {"AND", "OR"}
-
-    Note: Each DataFrame in `signal_dfs` must have the same index (date_time alignment).
+    Combine multiple strategy signals into a single final signal
+    using the specified buy/sell logical operators.
+    signal = +1 (buy) if buy conditions meet, -1 (sell) if sell conditions meet,
+    0 otherwise, then forward-filled to hold positions.
     """
-    # For convenience, put signals side by side
-    combined = pd.concat([df["signal"] for df in signal_dfs], axis=1)
-    combined.columns = [f"signal_{i}" for i in range(len(signal_dfs))]
+    # Assume all have the same index
+    idx = signal_dfs[0].index
+    # Stack signals horizontally in a NumPy array
+    signals_array = np.column_stack([df["signal"].values for df in signal_dfs])
 
-    # We'll create buy_mask and sell_mask
+    # Buy side
     if buy_operator == "AND":
-        buy_mask = (combined == 1).all(axis=1)  # all must be 1
+        buy_mask = np.all(signals_array == 1, axis=1)
     else:  # OR
-        buy_mask = (combined == 1).any(axis=1)  # any 1
+        buy_mask = np.any(signals_array == 1, axis=1)
 
+    # Sell side
     if sell_operator == "AND":
-        sell_mask = (combined == -1).all(axis=1)  # all must be -1
+        sell_mask = np.all(signals_array == -1, axis=1)
     else:  # OR
-        sell_mask = (combined == -1).any(axis=1)  # any -1
+        sell_mask = np.any(signals_array == -1, axis=1)
 
-    # Initialize combined signal
-    final_signal = pd.Series(data=0, index=combined.index)
+    # Build final signal array
+    final_signal = np.zeros(len(idx), dtype=np.int8)
     final_signal[buy_mask] = 1
     final_signal[sell_mask] = -1
 
-    # Forward-fill to hold positions
-    final_signal = final_signal.replace(to_replace=0, method="ffill")
+    # Forward-fill any 0's
+    for i in range(1, len(final_signal)):
+        if final_signal[i] == 0:
+            final_signal[i] = final_signal[i-1]
 
-    return final_signal
+    return pd.Series(final_signal, index=idx)

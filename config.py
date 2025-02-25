@@ -18,16 +18,18 @@ TRAINING_END   = "2022-05-20"
 TESTING_START  = "2022-05-21"
 TESTING_END    = "2025-01-01"
 
-CURRENCIES = ["BTC/USD", "LTC/USD"]
+CURRENCIES = ["BTC/USD", "ETH/USD", "LTC/USD", "XRP/USD"]
 INITIAL_CAPITAL = 10000
+
+TRADING_FEE_PCT = 0.001  # Example: 0.1%
 
 ############################################################
 #                  PARAMETER GRID                          #
 ############################################################
 STRATEGY_PARAM_GRID = {
     "moving_average_crossover": {
-        "short_window": [5, 10, 20],
-        "long_window": [50, 100, 200]
+        "short_window": [5, 10, 20, 50],
+        "long_window": [50, 100, 200, 300, 400]
     },
     "rsi": {
         "period": [7, 14],
@@ -59,50 +61,43 @@ STRATEGY_PARAM_GRID = {
         "zscore_threshold": [2, 2.5, 3]
     }
 }
+
+############################################################
+#      GLOBAL (META) HYPERPARAMS TO REDUCE OVERTRADING     #
+############################################################
+# We'll treat these as "meta-parameters" tested alongside each strategy's normal parameters.
+PENALTY_FACTOR_GRID = [0.0, 0.0005]  # Penalty per trade in your objective
+MIN_HOLDING_PERIOD_GRID = [0, 5, 10] # In hours (0 means no minimum hold)
+SHARPE_RATIO_WEIGHT_GRID = [0.0, 0.5, 1.0]
+#  - 0.0 => pure returns
+#  - 1.0 => pure Sharpe ratio
+#  - 0.5 => 50% weight to Sharpe, 50% to raw returns
+
 ############################################################
 #               STRATEGY COMBINATIONS                      #
 ############################################################
-# List of strategy combinations using logical conditions (AND/OR)
-# Each entry is a tuple: (list_of_strategies, logical_operator_for_BUY, logical_operator_for_SELL).
-
 STRATEGY_COMBINATIONS = [
-    # Moving Average and RSI (Momentum-based)
     (["moving_average_crossover", "rsi"], "AND", "OR"),
     (["moving_average_crossover", "rsi"], "OR", "AND"),
-
-    # MACD with Bollinger Bands (Trend-Following & Volatility)
     (["macd", "bollinger_bands"], "AND", "OR"),
     (["macd", "bollinger_bands"], "OR", "AND"),
-
-    # RSI with Z-Score Mean Reversion (Reversal Trading)
     (["rsi", "zscore_mean_reversion"], "AND", "AND"),
     (["rsi", "zscore_mean_reversion"], "OR", "OR"),
-
-    # High-Low Breakout with Volume Price Action (Breakout & Confirmation)
     (["high_low_breakout", "volume_price_action"], "AND", "AND"),
     (["high_low_breakout", "volume_price_action"], "OR", "OR"),
-
-    # VWAP with RSI (Mean Reversion in VWAP Zones)
     (["vwap_zone", "rsi"], "AND", "AND"),
     (["vwap_zone", "rsi"], "OR", "OR"),
-
-    # Multi-factor Strategy Combinations (3 Strategies)
     (["moving_average_crossover", "rsi", "bollinger_bands"], "AND", "OR"),
     (["macd", "high_low_breakout", "volume_price_action"], "OR", "AND"),
     (["zscore_mean_reversion", "rsi", "vwap_zone"], "AND", "AND"),
     (["bollinger_bands", "high_low_breakout", "macd"], "OR", "OR"),
-
-    # Experiment with different logical operators
     (["moving_average_crossover", "macd"], "AND", "AND"),
     (["moving_average_crossover", "macd"], "OR", "OR"),
     (["rsi", "bollinger_bands"], "AND", "AND"),
     (["rsi", "bollinger_bands"], "OR", "OR"),
     (["macd", "zscore_mean_reversion"], "AND", "AND"),
     (["macd", "zscore_mean_reversion"], "OR", "OR"),
-
-    # Additional advanced combinations
     (["rsi", "macd", "volume_price_action"], "AND", "AND"),
     (["zscore_mean_reversion", "bollinger_bands", "rsi"], "AND", "OR"),
     (["high_low_breakout", "vwap_zone", "moving_average_crossover"], "OR", "AND"),
 ]
-
